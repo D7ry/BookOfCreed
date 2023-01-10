@@ -477,7 +477,7 @@ RE::TESObjectREFR* DtryUtils::rayCast::cast_ray(RE::Actor* a_actor, RE::NiPoint3
 	if (pick_data.rayOutput.HasHit()) {
 		RE::NiPoint3 hitpos = rayStart + (a_rayEnd - rayStart) * pick_data.rayOutput.hitFraction;
 		if (API::TrueHUD_API_acquired) {
-			API::_TrueHud_API->DrawPoint(hitpos, 5, 0.5f);
+			API::_TrueHud_API->DrawPoint(hitpos, 5, 0.5f, 0x11FF39);
 		}
 		if (ret_rayDist) {
 			*ret_rayDist = hitpos.GetDistance(rayStart);

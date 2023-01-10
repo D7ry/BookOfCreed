@@ -32,7 +32,7 @@ private:
 	void raycastThread_func();
 	std::atomic<bool> _raycastThread_isRunning;
 	
-	bool _isHiddenBladeDrawn;
+	std::atomic<bool> _isHiddenBladeDrawn;
 	AssassinationTarget_t _target;
 
 	RE::TESIdleForm* _assassinateIdle_front;

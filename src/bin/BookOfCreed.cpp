@@ -8,19 +8,16 @@
 /// <returns>Whether the assassination is successfully initiated.</returns>
 bool BookOfCreed::TryAssassinate()
 {
-	INFO("trying to assassinate");
 	UpdatePcState();
 	if (!_isHiddenBladeDrawn) {
-		INFO("Hidden blade not drawn!");
 		return false;
 	}
 	RE::PlayerCharacter* pc = RE::PlayerCharacter::GetSingleton();
 	if (pc && pc->Is3DLoaded() && _target.ref && _target.ref->Is3DLoaded() && !_target.ref->IsDead()) {
-		INFO("Playing assassination idle!");
+		INFO("Assassinating {}", _target.ref->GetName());
 		RE::Offset::playPairedIdle(pc->GetActorRuntimeData().currentProcess, pc, RE::DEFAULT_OBJECT::kActionIdle, _assassinateIdle_front, true, false, _target.ref);
 		return true;
 	}
-	INFO("Target condition no pass");
 	return false;
 }
 /// <summary>
@@ -35,22 +32,16 @@ void BookOfCreed::UpdatePcState()
 	if (!pc) {
 		return;
 	}
-	INFO("Updating pc state");
 	bool isHiddenBladeDrawn;
 	if (pc->GetGraphVariableBool("bWristbladeArmed", isHiddenBladeDrawn)) {
-		//isHiddenBladeDrawn = true;
 		if (isHiddenBladeDrawn) {
-			INFO("blade drawn");
 			if (!_raycastThread_isRunning) {
-				INFO("starting raycast func");
 				std::jthread t([&] { raycastThread_func();});
 				t.detach();
 				_raycastThread_isRunning = true;
 			}
 		}
 		this->_isHiddenBladeDrawn = isHiddenBladeDrawn; //update cached state
-	} else {
-		INFO("failed to get ishiddenbladedrawn var");
 	}
 }
 
@@ -70,21 +61,24 @@ void BookOfCreed::updateTarget()
 	if (!pc->Is3DLoaded()) {
 		return;
 	}
-	RE::NiPoint3 relativeRayDest(0, 300, pc->GetHeight() * 0.5);  //a forward ray
-	
+
+	RE::NiPoint3 relativeRayDest;
+	if (pc->IsInMidair()) {
+		relativeRayDest = { 0, 0, -ASSASSINATION_DIST };  //downward ray for air assassination
+	} else {
+		relativeRayDest = { 0, 300, pc->GetHeight() * 0.5f };  //a forward ray
+	}
+
 	float rayHitDist;
 	RE::TESObjectREFR* rayHit = DtryUtils::rayCast::cast_ray(pc, Utils::get_abs_pos(pc, relativeRayDest), 0.5f, &rayHitDist);
-	if (rayHit 
-		&& rayHitDist <= ASSASSINATION_DIST
-		&& rayHit->GetFormType() == RE::FormType::ActorCharacter && Utils::Actor::isHumanoid(rayHit->As<RE::Actor>())
-		&& !rayHit->IsDead()) {
-		INFO("Found valid target: {}", rayHit->GetName());
+	if (rayHit && rayHitDist <= ASSASSINATION_DIST && rayHit->GetFormType() == RE::FormType::ActorCharacter && Utils::Actor::isHumanoid(rayHit->As<RE::Actor>()) && !rayHit->IsDead()) {
 		this->_target.distance = rayHitDist;
 		this->_target.ref = rayHit->As<RE::Actor>();
 		this->_target.angle = pc->GetHeadingAngle(rayHit);
 	} else {
-		INFO("failed to find target");
+		this->_target.ref = nullptr;
 	}
+	
 
 }
 
