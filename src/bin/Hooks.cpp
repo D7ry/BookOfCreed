@@ -4,7 +4,7 @@
 void Hooks::Install()
 {
 	AttackBlockHandler_OnProcessButton::Install();
-
+	AnimationEvent_OnProcessEvent::Install();
 }
 
 void Hooks::AttackBlockHandler_OnProcessButton::ProcessButton(RE::AttackBlockHandler* a_this, RE::ButtonEvent* a_event, RE::PlayerControlsData* a_data)

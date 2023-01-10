@@ -1,15 +1,18 @@
 #include "BookOfCreed.h"
 #include "Hooks.h"
+#include "include/Utils.h"
 void MessageHandler(SKSE::MessagingInterface::Message* a_msg)
 {
 	switch (a_msg->type) {
 	case SKSE::MessagingInterface::kDataLoaded:
 		Hooks::Install();
+		BookOfCreed::GetSingleton()->LoadData();
 		break;
 	case SKSE::MessagingInterface::kPostLoad:
+		API::init();
 		break;
 	case SKSE::MessagingInterface::kPostLoadGame:
-		BookOfCreed::GetSingleton()->updatePcState();
+		BookOfCreed::GetSingleton()->UpdatePcState();
 		break;
 	}
 }

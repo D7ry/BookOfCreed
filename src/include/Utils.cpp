@@ -173,7 +173,7 @@ DtryUtils::formLoader::formLoader(RE::BSFixedString pluginName)
 	logger::info("Loading from plugin {}...", pluginName);
 }
 
-void DtryUtils::formLoader::log()
+DtryUtils::formLoader::~formLoader()
 {
 	logger::info("Loaded {} forms from {}", _loadedForms, _pluginName);
 }
@@ -470,9 +470,15 @@ RE::TESObjectREFR* DtryUtils::rayCast::cast_ray(RE::Actor* a_actor, RE::NiPoint3
 	uint16_t collisionGroup = collisionFilterInfo >> 16;
 	pick_data.rayInput.filterInfo = (static_cast<uint32_t>(collisionGroup) << 16) | static_cast<uint32_t>(RE::COL_LAYER::kCharController);
 	/*Do*/
+	if (API::TrueHUD_API_acquired) {
+		API::_TrueHud_API->DrawLine(rayStart, a_rayEnd, 0.5f);
+	}
 	a_actor->GetParentCell()->GetbhkWorld()->PickObject(pick_data);
 	if (pick_data.rayOutput.HasHit()) {
 		RE::NiPoint3 hitpos = rayStart + (a_rayEnd - rayStart) * pick_data.rayOutput.hitFraction;
+		if (API::TrueHUD_API_acquired) {
+			API::_TrueHud_API->DrawPoint(hitpos, 5, 0.5f);
+		}
 		if (ret_rayDist) {
 			*ret_rayDist = hitpos.GetDistance(rayStart);
 		}
@@ -486,4 +492,15 @@ RE::TESObjectREFR* DtryUtils::rayCast::cast_ray(RE::Actor* a_actor, RE::NiPoint3
 		}
 	}
 	return nullptr;
+}
+
+void API::init()
+{
+	_TrueHud_API = reinterpret_cast<TRUEHUD_API::IVTrueHUD3*>(TRUEHUD_API::RequestPluginAPI(TRUEHUD_API::InterfaceVersion::V3));
+	if (_TrueHud_API) {
+		TrueHUD_API_acquired = true;
+		logger::info("Obtained Truehud API - {0:x}", (uintptr_t)_TrueHud_API);
+	} else {
+		logger::info("TrueHUD API not found.");
+	}
 }

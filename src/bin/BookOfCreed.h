@@ -16,9 +16,25 @@ public:
 	
 	bool TryAssassinate();
 	
-	void updatePcState();
+	void UpdatePcState();
+
+	void LoadData();
 
 private:
-	std::jthread _raycastThread;
+	struct AssassinationTarget_t
+	{
+		RE::Actor* ref;
+		float distance;
+		float angle;
+	};
+	void updateTarget();
+	
+	void raycastThread_func();
+	std::atomic<bool> _raycastThread_isRunning;
+	
 	bool _isHiddenBladeDrawn;
+	AssassinationTarget_t _target;
+
+	RE::TESIdleForm* _assassinateIdle_front;
+
 };
